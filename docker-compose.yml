@@ -1,0 +1,13 @@
+services:
+  redirecterr:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/redirecterr:latest
+    container_name: redirecterr
+    restart: unless-stopped
+    ports:
+      - 8481:8481
+    volumes:
+      - ./config:/config
+      - ./logs:/logs
+    environment:
+      - LOG_LEVEL=info
+      - TZ=UTC
