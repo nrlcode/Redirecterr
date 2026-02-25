@@ -110,13 +110,13 @@ filters:
 - `apply`: One or more instance names
 
 > [!TIP]  
-> For a list of possible condition fields see [fields.md](https://github.com/varthe/Redirecterr/blob/main/fields.md)
+> For a list of possible condition fields see [fields.md](fields.md)
 
 ### Sample config
 
 ```yaml
-overseerr_url: ""
-overseerr_api_token: ""
+overseerr_url: "http://192.168.1.10:5055/api/v1"
+overseerr_api_token: "your-api-token"
 
 approve_on_no_match: true
 
@@ -141,4 +141,31 @@ filters:
   # Send everything else to sonarr and sonarr_4k instances
   - media_type: tv
     apply: ["sonarr", "sonarr_4k"]
+```
+
+## Development
+
+### Prerequisites
+
+- [Bun](https://bun.sh) runtime
+
+### Local Setup
+
+```bash
+# Install dependencies
+bun install
+
+# Run in development mode (with hot reload)
+bun dev
+
+# Run tests
+bun test
+```
+
+### Building Docker Image
+
+If you want to build your own version of the image:
+
+```bash
+docker build -t redirecterr .
 ```

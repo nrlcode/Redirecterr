@@ -3,19 +3,21 @@ import type { Webhook, PostData } from "../types"
 /**
  * Checks if an object is a valid webhook
  */
-export const isWebhook = (obj: any): obj is Webhook => 
-    typeof obj === "object" && "media" in obj && "request" in obj
+export const isWebhook = (obj: any): obj is Webhook =>
+    typeof obj === "object" && obj !== null &&
+    typeof obj.media === "object" && obj.media !== null &&
+    typeof obj.request === "object" && obj.request !== null
 
 /**
  * Checks if a value is an object
  */
-export const isObject = (value: any): boolean => 
-    typeof value === "object" && value !== null
+export const isObject = (value: any): boolean =>
+    typeof value === "object" && value !== null && !Array.isArray(value)
 
 /**
  * Checks if a value is an array of objects
  */
-export const isObjectArray = (value: any): boolean => 
+export const isObjectArray = (value: any): boolean =>
     Array.isArray(value) && value.some((item: any) => isObject(item))
 
 /**

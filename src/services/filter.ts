@@ -52,10 +52,11 @@ export const matchValue = (filterValue: any, dataValue: any, required = false): 
 export const matchKeywords = (keywords: Array<Keyword>, filterCondition: Condition): boolean => {
 	const names = keywords.map((k) => k.name.toLowerCase())
 
-	if (typeof filterCondition === "object" && filterCondition !== null) {
+	if (typeof filterCondition === "object" && filterCondition !== null && !Array.isArray(filterCondition)) {
 		if ("require" in filterCondition && filterCondition.require) {
 			const req = new Set(normalizeToArray(filterCondition.require))
-			if (!names.some((n) => req.has(n))) return false
+			for (const n of names) req.delete(n)
+			if (req.size > 0) return false
 		}
 
 		if ("include" in filterCondition && filterCondition.include) {
@@ -83,10 +84,11 @@ export const matchContentRatings = (contentRatings: ContentRatings, filterCondit
 
 	const ratings: string[] = contentRatings.results.map((r: any) => String(r.rating).toLowerCase())
 
-	if (typeof filterCondition === "object" && filterCondition !== null) {
+	if (typeof filterCondition === "object" && filterCondition !== null && !Array.isArray(filterCondition)) {
 		if ("require" in filterCondition && filterCondition.require) {
 			const req = new Set(normalizeToArray(filterCondition.require))
-			if (!ratings.some((r) => req.has(r))) return false
+			for (const r of ratings) req.delete(r)
+			if (req.size > 0) return false
 		}
 
 		if ("include" in filterCondition && filterCondition.include) {
@@ -114,8 +116,8 @@ export const findInstances = (webhook: Webhook, data: MediaData, filters: Filter
 	try {
 		const matchingFilter = filters.find(({ media_type, is_4k, conditions }) => {
 			if (media_type !== webhook.media.media_type) return false
-			if (is_4k === false && webhook.media.status !== "PENDING") return false
-			if (is_4k === true && webhook.media.status4k !== "PENDING") return false
+			if (is_4k === false && (webhook.media.status !== "PENDING" || webhook.media.status4k === "PENDING")) return false
+			if (is_4k === true && (webhook.media.status4k !== "PENDING" || webhook.media.status === "PENDING")) return false
 
 			if (!conditions || Object.keys(conditions).length === 0) return true
 
@@ -151,7 +153,8 @@ export const findInstances = (webhook: Webhook, data: MediaData, filters: Filter
 							})
 						)
 					}
-				} else if (priorityKey === "max_seasons" && webhook.extra) {
+				} else if (priorityKey === "max_seasons") {
+					if (!webhook.extra) return false
 					const requestedSeasons = webhook.extra.find((item: any) => item.name === "Requested Seasons")?.value?.split(",")
 					const max = typeof value === "number" ? value : Number.parseInt(String(value), 10)
 					if (Number.isFinite(max) && requestedSeasons && requestedSeasons.length > max) return false

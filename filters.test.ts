@@ -1,5 +1,4 @@
-import { describe, it } from "bun:test"
-import { strictEqual } from "assert"
+import { describe, it, expect } from "bun:test"
 import { findInstances } from "./src/services/filter"
 
 // --- Webhook and media data ---
@@ -293,7 +292,7 @@ describe("Filter Matching Tests", () => {
 				{ ...movieGladiator2Data, genres: [{ id: 12, name: "Adventure" }] } as any,
 				filters as any
 			)
-			strictEqual(result, null)
+			expect(result).toBe(null)
 		})
 
 		it("Test exclude condition with excluded keyword present", () => {
@@ -314,7 +313,7 @@ describe("Filter Matching Tests", () => {
 			}
 
 			const result = findInstances(movieWebhook as any, data as any, additionalFilters as any)
-			strictEqual(result, null)
+			expect(result).toBe(null)
 		})
 
 		it("Test include condition with partial match", () => {
@@ -326,7 +325,7 @@ describe("Filter Matching Tests", () => {
 				},
 			]
 			const result = findInstances(movieWebhook as any, movieGladiator2Data as any, filters as any)
-			strictEqual(result, "include-test")
+			expect(result).toBe("include-test")
 		})
 
 		it("Test simple string condition", () => {
@@ -338,7 +337,7 @@ describe("Filter Matching Tests", () => {
 				},
 			]
 			const result = findInstances(movieWebhook as any, movieGladiator2Data as any, simpleFilter as any)
-			strictEqual(result, "simple-genre-test")
+			expect(result).toBe("simple-genre-test")
 		})
 
 		it("Test array condition", () => {
@@ -350,7 +349,7 @@ describe("Filter Matching Tests", () => {
 				},
 			]
 			const result = findInstances(movieWebhook as any, movieGladiator2Data as any, filters as any)
-			strictEqual(result, "array-test")
+			expect(result).toBe("array-test")
 		})
 
 		it("Test object condition with include", () => {
@@ -362,7 +361,7 @@ describe("Filter Matching Tests", () => {
 				},
 			]
 			const result = findInstances(movieWebhook as any, movieGladiator2Data as any, includeFilter as any)
-			strictEqual(result, "include-test")
+			expect(result).toBe("include-test")
 		})
 
 		it("Test multiple exclude conditions", () => {
@@ -374,7 +373,7 @@ describe("Filter Matching Tests", () => {
 				},
 			]
 			const result = findInstances(movieWebhook as any, movieGladiator2Data as any, filters as any)
-			strictEqual(result, "exclude-test")
+			expect(result).toBe("exclude-test")
 		})
 
 		it("Test exclude with one matching condition", () => {
@@ -390,7 +389,7 @@ describe("Filter Matching Tests", () => {
 				keywords: [...movieGladiator2Data.keywords, { id: 9999, name: "fantasy" }],
 			}
 			const result = findInstances(movieWebhook as any, data as any, filters as any)
-			strictEqual(result, null)
+			expect(result).toBe(null)
 		})
 
 		it("Test keywords with include, require, and exclude in one condition", () => {
@@ -404,7 +403,7 @@ describe("Filter Matching Tests", () => {
 				},
 			]
 			const result = findInstances(movieWebhook as any, movieGladiator2Data as any, filters as any)
-			strictEqual(result, "complex-keyword-test")
+			expect(result).toBe("complex-keyword-test")
 		})
 
 		it("Test multiple condition types across different fields", () => {
@@ -420,7 +419,7 @@ describe("Filter Matching Tests", () => {
 				},
 			]
 			const result = findInstances(movieWebhook as any, movieGladiator2Data as any, filters as any)
-			strictEqual(result, "multi-test")
+			expect(result).toBe("multi-test")
 		})
 
 		it("Test complex condition with all types", () => {
@@ -436,7 +435,7 @@ describe("Filter Matching Tests", () => {
 				},
 			]
 			const result = findInstances(movieWebhook as any, movieGladiator2Data as any, filters as any)
-			strictEqual(result, "complex-test")
+			expect(result).toBe("complex-test")
 		})
 
 		it("Test complex condition with negative case", () => {
@@ -452,7 +451,7 @@ describe("Filter Matching Tests", () => {
 				},
 			]
 			const result = findInstances(movieWebhook as any, movieGladiator2Data as any, filters as any)
-			strictEqual(result, null)
+			expect(result).toBe(null)
 		})
 	})
 
@@ -465,7 +464,7 @@ describe("Filter Matching Tests", () => {
 			},
 		]
 		const result = findInstances(movieWebhook as any, movieGladiator2Data as any, filters as any)
-		strictEqual(result, "lang-test")
+		expect(result).toBe("lang-test")
 	})
 
 	it("Exclude movie with keyword", () => {
@@ -477,7 +476,7 @@ describe("Filter Matching Tests", () => {
 			},
 		]
 		const result = findInstances(movieWebhook as any, movieGladiator2Data as any, filters as any)
-		strictEqual(result, null)
+		expect(result).toBe(null)
 	})
 
 	it("Match show with language only", () => {
@@ -489,7 +488,7 @@ describe("Filter Matching Tests", () => {
 			},
 		]
 		const result = findInstances(showWebhook as any, showArcaneData as any, filters as any)
-		strictEqual(result, "lang-test")
+		expect(result).toBe("lang-test")
 	})
 
 	it("Test keyword exclusion", () => {
@@ -501,7 +500,7 @@ describe("Filter Matching Tests", () => {
 			},
 		]
 		const result = findInstances(movieWebhook as any, movieGladiator2Data as any, filters as any)
-		strictEqual(result, null)
+		expect(result).toBe(null)
 	})
 
 	it("Test keyword matching", () => {
@@ -520,7 +519,7 @@ describe("Filter Matching Tests", () => {
 			} as any,
 			filters as any
 		)
-		strictEqual(result, "keyword-test")
+		expect(result).toBe("keyword-test")
 	})
 
 	it("Match movie based on age rating", () => {
@@ -539,7 +538,7 @@ describe("Filter Matching Tests", () => {
 			} as any,
 			filters as any
 		)
-		strictEqual(result, "rating-test")
+		expect(result).toBe("rating-test")
 	})
 
 	it("Handle non-matching cases gracefully", () => {
@@ -555,7 +554,7 @@ describe("Filter Matching Tests", () => {
 			},
 		]
 		const result = findInstances(movieWebhook as any, movieGladiator2Data as any, filters as any)
-		strictEqual(result, null)
+		expect(result).toBe(null)
 	})
 
 	it("Match a complex filter with mixed types (strings, arrays)", () => {
@@ -570,6 +569,6 @@ describe("Filter Matching Tests", () => {
 			},
 		]
 		const result = findInstances(showWebhook as any, showArcaneData as any, filters as any)
-		strictEqual(result, "complex-mixed-test")
+		expect(result).toBe("complex-mixed-test")
 	})
 })

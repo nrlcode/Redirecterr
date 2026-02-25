@@ -31,7 +31,7 @@ export interface Keyword {
 }
 
 export interface ContentRating {
-    iso_3116_1: string
+    iso_3166_1: string
     rating: string
 }
 

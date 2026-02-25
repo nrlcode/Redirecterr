@@ -13,10 +13,11 @@ const headers = {
  */
 export const fetchFromOverseerr = async (endpoint: string): Promise<any> => {
     const url = new URL(endpoint, config.overseerr_url)
-    const response = await fetch(url, { headers: headers })
+    const response = await fetch(url, { headers: headers, signal: AbortSignal.timeout(10_000) })
 
-    if (!response.ok || response.status !== 200) {
-        throw new Error(`could not retrieve data from Overseerr: ${response.status} ${response.statusText}`)
+    if (!response.ok) {
+        const body = await response.text().catch(() => "")
+        throw new Error(`could not retrieve data from Overseerr: ${response.status} ${response.statusText}${body ? ` - ${body}` : ""}`)
     }
 
     const data = await response.json()
@@ -29,7 +30,7 @@ export const fetchFromOverseerr = async (endpoint: string): Promise<any> => {
 export const approveRequest = async (requestId: string): Promise<void> => {
     try {
         const url = new URL(`/api/v1/request/${requestId}/approve`, config.overseerr_url)
-        const response = await fetch(url, { method: "POST", headers: headers })
+        const response = await fetch(url, { method: "POST", headers: headers, signal: AbortSignal.timeout(10_000) })
 
         if (!response.ok) {
             throw new Error(`${response.status} ${response.statusText}`)
@@ -38,6 +39,7 @@ export const approveRequest = async (requestId: string): Promise<void> => {
         logger.info(`Request ID ${requestId} approved successfully`)
     } catch (error) {
         logger.error(`Error approving request: ${error}`)
+        throw error
     }
 }
 
@@ -51,6 +53,7 @@ export const applyConfig = async (requestId: string, postData: Record<string, an
             method: "PUT",
             headers: headers,
             body: JSON.stringify(postData),
+            signal: AbortSignal.timeout(10_000),
         })
 
         if (!response.ok) {
@@ -60,5 +63,6 @@ export const applyConfig = async (requestId: string, postData: Record<string, an
         logger.info(`Configuration applied to request ID ${requestId}`)
     } catch (error) {
         logger.error(`Error applying configuration: ${error}`)
+        throw error
     }
 }

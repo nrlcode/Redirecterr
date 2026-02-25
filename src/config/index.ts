@@ -30,14 +30,16 @@ const schema: Schema = {
                     type: "object",
                     properties: {
                         server_id: {
-                            type: "number",
+                            type: "integer",
+                            minimum: 0,
                         },
                         root_folder: {
                             type: "string",
                             minLength: 1,
                         },
                         quality_profile_id: {
-                            type: "number",
+                            type: "integer",
+                            minimum: 0,
                         },
                         approve: {
                             type: "boolean",
@@ -153,6 +155,22 @@ const loadConfig = async (): Promise<Config> => {
 
         if (!validate(config)) {
             throw new Error(`\n${formatErrors(validate.errors)}`)
+        }
+
+        // Set default for approve_on_no_match
+        if (config.approve_on_no_match === undefined) {
+            config.approve_on_no_match = true
+        }
+
+        // Validate that filter apply targets reference defined instances
+        const instanceNames = new Set(Object.keys(config.instances))
+        for (const filter of config.filters) {
+            const targets = Array.isArray(filter.apply) ? filter.apply : [filter.apply]
+            for (const target of targets) {
+                if (!instanceNames.has(target)) {
+                    throw new Error(`Filter references unknown instance "${target}". Available instances: ${[...instanceNames].join(", ")}`)
+                }
+            }
         }
 
         if (logger.isDebugEnabled()) {

@@ -1,11 +1,13 @@
 import logger from "../utils/logger"
 import { config } from "../config"
 import { approveRequest, fetchFromOverseerr } from "../api/overseerr"
-import { getPostData } from "../utils/helpers"
+import { getPostData, buildDebugLogMessage } from "../utils/helpers"
 import { findInstances } from "./filter"
 import { sendToInstances } from "./instance"
-import { buildDebugLogMessage } from "../utils/helpers"
 import type { Webhook } from "../types"
+
+// Track in-flight requests to prevent duplicate processing
+const inFlightRequests = new Set<string>()
 
 /**
  * Create a standardized response
@@ -35,6 +37,11 @@ export const handleWebhook = async (webhook: Webhook): Promise<Response> => {
 
     const { media, request } = webhook
 
+    // Check for duplicate webhook
+    if (inFlightRequests.has(request.request_id)) {
+        return createResponse("success", `Request ID ${request.request_id} is already being processed`, 200)
+    }
+
     // Auto-approve music requests
     if (media.media_type === "music") {
         await approveRequest(request.request_id)
@@ -42,12 +49,14 @@ export const handleWebhook = async (webhook: Webhook): Promise<Response> => {
     }
 
     try {
+        inFlightRequests.add(request.request_id)
+
         // Fetch media data from Overseerr
         const data = await fetchFromOverseerr(`/api/v1/${media.media_type}/${media.tmdbId}`)
         logger.info(
             `Received request ID ${request.request_id} for ${media.media_type} "${data?.originalTitle || data?.originalName}"`
         )
-        
+
         // Log detailed request information in debug mode
         if (logger.isDebugEnabled()) {
             const cleanMetadata = Object.fromEntries(
@@ -66,7 +75,7 @@ export const handleWebhook = async (webhook: Webhook): Promise<Response> => {
         // Find matching instances based on filters
         const instances = findInstances(webhook, data, config.filters)
         const postData = getPostData(webhook)
-        
+
         // Process request based on filter matches
         if (instances) {
             await sendToInstances(instances, request.request_id, postData)
@@ -76,9 +85,11 @@ export const handleWebhook = async (webhook: Webhook): Promise<Response> => {
             await approveRequest(request.request_id)
             return createResponse("success", "Request approved (no matching filter)", 200)
         }
-        
+
         return createResponse("success", "Request processed (no action taken)", 200)
     } catch (error) {
         return createResponse("error", `Error processing webhook: ${error}`, 500)
+    } finally {
+        inFlightRequests.delete(request.request_id)
     }
 }
